@@ -1,4 +1,6 @@
+local string = require("string")
 local table = require("table")
+local Emitter = require("core").Emitter
 local charset = require("charset")
 local HierarchicalStateMachine = require("hsm").HierarchicalStateMachine
 
@@ -92,5 +94,41 @@ function Reader:end_()
   self:_transit(self.states.EOF)
 end
 
+local Writer = Emitter:extend()
+
+function Writer:initialize()
+  self.fields = {}
+end
+
+function Writer:writeField(field)
+  local text = self:_isQuoteNeeded(field) and self:_quote(field) or field
+  table.insert(self.fields, text)
+end
+
+function Writer:flushRecord()
+  self:emit("record", table.concat(self.fields, ",") .. "\r\n")
+  self.fields = {}
+end
+
+local function find(hayStack, needle)
+  return string.find(hayStack, needle, 1, true)
+end
+
+function Writer:_isQuoteNeeded(field)
+  return find(field, ",") or find(field, '"') or find(field, "\n")
+end
+
+function Writer:_quote(field)
+  return '"' .. string.gsub(field, '"', '""') .. '"'
+end
+
+function Writer:writeRecord(fields)
+  for _, field in ipairs(fields) do
+    self:writeField(field)
+  end
+  self:flushRecord()
+end
+
 csv.Reader = Reader
+csv.Writer = Writer
 return csv
