@@ -1,9 +1,8 @@
 local exports = {}
 
-local string = require("string")
 local csv = require("../csv")
 
-exports["readOneSimpleRow"] = function (test)
+exports["readOneSimpleRecord"] = function (test)
   local reader = csv.Reader:new()
   local fields = {"foo", "bar", "baz"}
   local records = {{"foo", "bar", "baz"}}
@@ -24,7 +23,7 @@ exports["readOneSimpleRow"] = function (test)
   test.done()
 end
 
-exports["readSimpleRows"] = function (test)
+exports["readSimpleRecords"] = function (test)
   local reader = csv.Reader:new()
   local fields = {"foo", "bar", "baz", "foo2", "bar2", "baz2"}
   local records = {{"foo", "bar", "baz"}, {"foo2", "bar2", "baz2"}}

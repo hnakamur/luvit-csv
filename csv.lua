@@ -8,7 +8,9 @@ local Reader = HierarchicalStateMachine:extend()
 function Reader:initialize()
   self:defineStates{
     Unquoted = {},
-    Quoted = {},
+    Quoted = {
+      SeenQuote = {}
+    },
     EOF = {}
   }
   self.state = self.states.Unquoted
@@ -22,13 +24,43 @@ function Reader:initialize()
 end
 
 function Reader:_reactUnquoted(char)
+--print("Unquoted char="..char)
+  if char == "\r" then return end -- ignore
+  if char == '"' then return self.states.Quoted end
   if char == "," or char == "\n" then
     self:_emitField()
     if char == "\n" then
       self:_emitRecord()
     end
   else
-    table.insert(self.fieldChars, char)
+    self:_addFieldChar(char)
+  end
+end
+
+function Reader:_reactQuoted(char)
+--print("Quoted char="..char)
+  if char == "\r" then return end -- ignore
+  if char == '"' then return self.states.SeenQuote end
+  self:_addFieldChar(char)
+end
+
+function Reader:_reactSeenQuote(char)
+--print("SeenQuote char="..char)
+  if char == '"' then
+    self:_addFieldChar(char)
+    return self.states.Quoted
+  end
+  if char == "\r" then return end -- ignore
+  if char == "," or char == "\n" then
+    self:_emitField()
+    if char == "\n" then
+      self:_emitRecord()
+    end
+    return self.states.Unquoted
+  else
+    self:_emitField()
+    self:_transit(self.states.Unquoted)
+    return self:react(char)
   end
 end
 
@@ -39,14 +71,21 @@ function Reader:_entryEOF()
   end
 end
 
+function Reader:_addFieldChar(char)
+  table.insert(self.fieldChars, char)
+--print('fieldChars='..table.concat(self.fieldChars, ''))
+end
+
 function Reader:_emitField()
   local field = table.concat(self.fieldChars)
   self.fieldChars = {}
   table.insert(self.record, field)
+--print("emit field "..field.."!")
   self:emit("field", field)
 end
 
 function Reader:_emitRecord()
+--print("emit record")
   self:emit("record", self.record)
   self.record = {}
 end
