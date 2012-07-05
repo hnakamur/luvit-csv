@@ -5,6 +5,7 @@ return {
   author = "Hiroaki Nakamura <hnakamur@gmail.com>",
   main = "csv.lua",
   dependencies = {
+    charset = "https://github.com/hnakamur/luvit-charset/zipball/master",
     hsm = "https://github.com/hnakamur/luvit-hsm/zipball/master"
   }
 }
