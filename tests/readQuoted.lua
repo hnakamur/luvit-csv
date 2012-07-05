@@ -36,7 +36,6 @@ exports["readQuoted"] = function (test)
   local i = 1
   local j = 1
   reader:on("field", function(data)
---print("on field data="..data.."!")
     test.equal(data, fields[i])
     i = i + 1
   end)
@@ -65,7 +64,6 @@ exports["readQuoteQuoted"] = function (test)
   local i = 1
   local j = 1
   reader:on("field", function(data)
---print("on field data="..data.."!")
     test.equal(data, fields[i])
     i = i + 1
   end)
