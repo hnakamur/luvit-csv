@@ -90,7 +90,7 @@ function Reader:read(data)
   self.divider:feed(data)
 end
 
-function Reader:end_()
+function Reader:finish()
   self:_transit(self.states.EOF)
 end
 
